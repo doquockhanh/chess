@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chess Game</title>
+  <style>
+    .chessboard {
+      display: flex;
+      flex-wrap: wrap;
+      width: 400px; /* Adjust the width to fit the board */
+    }
+    .square {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      border: 1px solid #000;
+      box-sizing: border-box;
+    }
+    .white { background-color: #f0d9b5; }
+    .black { background-color: #b58863; }
+    .selected { border: 2px solid yellow; }
+  </style>
+</head>
+<body>
+  <div style="display: none;">♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜</div>
+  <div class="chessboard" id="board"></div>
+  <div>Current player is <span id="player"></span></div>
+  <button id="playAgain">Play again</button>
+  <div id="winner"></div>
+  <script src="chess.js"></script>
+</body>
+</html>
