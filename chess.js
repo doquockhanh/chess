@@ -116,38 +116,53 @@ function checkWin(endRow, endCol) {
 }
 
 function validateMove(startRow, startCol, endRow, endCol) {
-    const startPiece = squares[startRow][startCol].innerText;
-    const endPiece = squares[endRow][endCol].innerText;
+    const startPiece = squares[startRow][startCol].innerText.toLowerCase();
+    const endPiece = squares[endRow][endCol].innerText.toLowerCase();
 
     if (currentPlayer === 'white') {
-        if (startPiece.toLowerCase() === '♙' && startCol === endCol && startRow - endRow === 2 && endPiece === '') {
-            return true;
+        if (startPiece.toLowerCase() === '♙') {
+            if (startCol === endCol) {
+                if(endPiece === '' && ((startRow === 6 && startRow - endRow <= 2) || startRow - endRow === 1)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            if (Math.abs(startCol - endCol) === 1) {
+                if(Math.abs(startRow - endRow) === 1 && black.includes(endPiece)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         }
-        if (startPiece.toLowerCase() === '♘' && (black.includes(endPiece) || endPiece === '')) {
+            
+        if (startPiece === '♘' && (black.includes(endPiece) || endPiece === '')) {
             const dx = Math.abs(startCol - endCol);
             const dy = Math.abs(startRow - endRow);
             return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
         }
-        if (startPiece.toLowerCase() === '♖' && (black.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♖' && (black.includes(endPiece) || endPiece === '')) {
             // Rook's movement - horizontal or vertical movement
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return (startRow === endRow || startCol === endCol);
         }
-        if (startPiece.toLowerCase() === '♗' && (black.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♗' && (black.includes(endPiece) || endPiece === '')) {
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return Math.abs(startRow - endRow) === Math.abs(startCol - endCol);
         }
-        if (startPiece.toLowerCase() === '♕' && (black.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♕' && (black.includes(endPiece) || endPiece === '')) {
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return Math.abs(startRow - endRow) === Math.abs(startCol - endCol) || startRow === endRow || startCol === endCol;
         }
-        if (startPiece.toLowerCase() === '♔' && (black.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♔' && (black.includes(endPiece) || endPiece === '')) {
             return (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 1)
                 || (Math.abs(startRow - endRow) === 0 && Math.abs(startCol - endCol) === 1)
                 || (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 0)
@@ -155,33 +170,47 @@ function validateMove(startRow, startCol, endRow, endCol) {
     }
 
     if (currentPlayer === 'black') {
-        if (startPiece.toLowerCase() === '♟' && startCol === endCol && endRow - startRow === 2 && endPiece === '') {
-            return true;
+        if (startPiece.toLowerCase() === '♟') {
+            if (startCol === endCol) {
+                if(endPiece === '' && ((startRow === 1 && endRow - startRow <= 2) || endRow - startRow === 1)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            if (Math.abs(startCol - endCol) === 1) {
+                if(Math.abs(startRow - endRow) === 1 && white.includes(endPiece)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         }
-        if (startPiece.toLowerCase() === '♞' && (white.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♞' && (white.includes(endPiece) || endPiece === '')) {
             const dx = Math.abs(startCol - endCol);
             const dy = Math.abs(startRow - endRow);
             return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
         }
-        if (startPiece.toLowerCase() === '♜' && (white.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♜' && (white.includes(endPiece) || endPiece === '')) {
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return (startRow === endRow || startCol === endCol);
         }
-        if (startPiece.toLowerCase() === '♝' && (white.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♝' && (white.includes(endPiece) || endPiece === '')) {
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return Math.abs(startRow - endRow) === Math.abs(startCol - endCol);
         }
-        if (startPiece.toLowerCase() === '♛' && (white.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♛' && (white.includes(endPiece) || endPiece === '')) {
             if (isBlock(startRow, startCol, endRow, endCol)) {
                 return false;
             }
             return Math.abs(startRow - endRow) === Math.abs(startCol - endCol) || startRow === endRow || startCol === endCol;
         }
-        if (startPiece.toLowerCase() === '♚' && (white.includes(endPiece) || endPiece === '')) {
+        if (startPiece === '♚' && (white.includes(endPiece) || endPiece === '')) {
             return (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 1)
                 || (Math.abs(startRow - endRow) === 0 && Math.abs(startCol - endCol) === 1)
                 || (Math.abs(startRow - endRow) === 1 && Math.abs(startCol - endCol) === 0)
