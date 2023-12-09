@@ -1,3 +1,8 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const socket = io();
+})
+
+
 const board = document.getElementById('board');
 const squares = [];
 let currentPlayer = 'white'; // 'white' or 'black'
