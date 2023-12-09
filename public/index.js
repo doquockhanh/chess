@@ -2,28 +2,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const board = document.getElementById('board');
     const squares = [];
-    let currentPlayer = 'white'; // 'white' or 'black'
+    let playerColor = null; // 'white' or 'black'
     let selectedSquare = null;
     const black = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜', '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'];
     const white = ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'];
-    document.getElementById('player').innerText = currentPlayer;
-    document.getElementById('playAgain').addEventListener('click', playAgain);
     let game = true;
-    let playerNumber;
+    let myturn = false;
 
-    socket.on('playerNumber', (number) => {
-        playerNumber = number;
-        console.log(`You are player ${playerNumber}`);
+    socket.on('color', (color) => {
+        playerColor = color;
     });
 
     socket.on('opponentMove', (data) => {
-        const [startRow, startCol, endRow, endCol] = data;
+        const {startRow, startCol, endRow, endCol} = data;
         checkWin(endRow, endCol);
         squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
         squares[startRow][startCol].innerText = '';
     });
 
+    socket.on('newTurn', () => {
+        myturn = true;
+    })
+
+    socket.on('start', () => {
+        if(playerColor === 'white') {
+            myturn = true;
+        }
+        initializeBoard(); 
+    })
+
     function initializeBoard() {
+        board.textContent = '';
         for (let i = 0; i < 8; i++) {
             squares[i] = [];
             for (let j = 0; j < 8; j++) {
@@ -36,14 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 board.appendChild(square);
             }
         }
-        setupPieces();
-    }
-
-    function playAgain() {
-        game = true;
-        board.textContent = '';
-        document.getElementById('winner').innerText = '';
-        initializeBoard();
         setupPieces();
     }
 
@@ -66,28 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function movePiece(startRow, startCol, endRow, endCol) {
-        if (validateMove(startRow, startCol, endRow, endCol)) {
-            checkWin(endRow, endCol);
-            squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
-            squares[startRow][startCol].innerText = '';
-            socket.emit('makeMove', [startRow, startCol, endRow, endCol]);
-        }
-    }
-
-
-    function swapPlayer() {
-        if (currentPlayer === 'white') {
-            currentPlayer = 'black'
-        } else {
-            currentPlayer = 'white'
-        }
-        document.getElementById('player').innerText = currentPlayer;
-    }
-
     function squareClick(event) {
         if (game === false) {
             alert('Game over! Press play again to new game')
+            return;
+        }
+
+        if (myturn === false) {
             return;
         }
 
@@ -119,6 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function movePiece(startRow, startCol, endRow, endCol) {
+        if (validateMove(startRow, startCol, endRow, endCol)) {
+            checkWin(endRow, endCol);
+            squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
+            squares[startRow][startCol].innerText = '';
+            myturn = false;
+            socket.emit('makeMove', {startRow, startCol, endRow, endCol});
+           
+        }
+    }
+   
     function checkWin(endRow, endCol) {
         const endPiece = squares[endRow][endCol].innerText;
         if (endPiece.toLowerCase() === '♔') {
@@ -135,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const startPiece = squares[startRow][startCol].innerText.toLowerCase();
         const endPiece = squares[endRow][endCol].innerText.toLowerCase();
 
-        if (currentPlayer === 'white') {
+        if (playerColor === 'white') {
             if (startPiece.toLowerCase() === '♙') {
                 if (startCol === endCol) {
                     if (endPiece === '' && ((startRow === 6 && startRow - endRow <= 2) || startRow - endRow === 1)) {
@@ -184,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (currentPlayer === 'black') {
+        if (playerColor === 'black') {
             if (startPiece.toLowerCase() === '♟') {
                 if (startCol === endCol) {
                     if (endPiece === '' && ((startRow === 1 && endRow - startRow <= 2) || endRow - startRow === 1)) {
@@ -271,8 +268,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return false;
     }
-
-    initializeBoard();
-
 })
 
