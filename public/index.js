@@ -120,11 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const endPiece = squares[endRow][endCol].innerText;
         if (endPiece.toLowerCase() === '♔') {
             game = false;
-            document.getElementById('winner').innerText = 'The winner is Black';
         }
         if (endPiece.toLowerCase() === '♚') {
             game = false;
-            document.getElementById('winner').innerText = 'The winner is White';
         }
     }
 
