@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const os = require('os');
 
 const app = express();
 const server = http.createServer(app);
@@ -21,7 +22,7 @@ io.on('connection', (socket) => {
 
   // Send the player their color
   const color = colors.pop();
-  if(color === 'white') {
+  if (color === 'white') {
     colors = ['white', 'black'];
   }
   socket.emit('color', color);
@@ -41,6 +42,25 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const networkInterfaces = os.networkInterfaces();
+
+// Filter and display IPv4 addresses of Wi-Fi adapter
+const wifiInterface = networkInterfaces['Wi-Fi'] || networkInterfaces['wlan0'];
+if (wifiInterface) {
+  const wifiIPv4 = wifiInterface.find(interface => interface.family === 'IPv4');
+  if (wifiIPv4) {
+    console.log('Wi-Fi IPv4 address:', wifiIPv4.address);
+    serverOn(wifiIPv4.address);
+  } else {
+    console.log('Wi-Fi IPv4 address not found');
+  }
+} else {
+  console.log('Wi-Fi interface not found');
+}
+
+function serverOn(host) {
+  server.listen(PORT, host, () => {
+    console.log(`Server running on port http://${host}:${PORT}`);
+  });
+}
+

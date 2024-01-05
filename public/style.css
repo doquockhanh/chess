@@ -1,0 +1,89 @@
+:root {
+    --board-width: 500px;
+    --square-margin: 2px;
+    --page-bg-from: #243949;
+    --page-bg-to: #517fa4;
+    --white-square: #48c6ef;
+    --black-square: #6f86d6;
+    --text-light: #48c6ef;
+    --text-dark: #6f86d6;
+}
+
+body {
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(45deg, var(--page-bg-from),  var(--page-bg-to))
+}
+
+#game {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-items: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.chess-board {
+    display: flex;
+    flex-wrap: wrap;
+    width: var(--board-width);
+}
+
+.square {
+    width: calc(var(--board-width) / 8 - var(--square-margin)*2);
+    height: calc(var(--board-width) / 8);
+    margin: var(--square-margin);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+    border-radius: 5px;
+    cursor: default;
+    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;   
+}
+
+.square:hover {
+    transform: scale(1.05);
+}
+
+.white {
+    background-color: var(--white-square);
+}
+
+.black {
+    background-color: var(--black-square);
+}
+
+.selected {
+    outline: none;
+    background-color: #ffa500;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.left-board {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+}
+
+
+.right-board {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+}
+
+.text-light {
+    color: var(--text-light);
+}
+
+.text-dark {
+    color: var(--text-dark);
+}

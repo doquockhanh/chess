@@ -1,0 +1,49 @@
+.countdown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    border: 1px solid var(--text-dark);
+    border-radius: 20px;
+    height: auto;
+    padding: 20px;
+}
+
+.timer {
+    display: flex;
+}
+
+.time {
+    margin: 0 10px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+@keyframes countdown {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(0.5);
+    }
+}
+
+.time span:first-child {
+    display: block;
+    font-size: 42px;
+}
+
+.time span:last-child {
+    display: block;
+    font-size: 14px;
+}
+
+.time span:last-child {
+    opacity: 0.7;
+}
+
+.time span:first-child {
+    animation: countdown 1s linear infinite alternate;
+}

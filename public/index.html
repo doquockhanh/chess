@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Chess Game</title>
-  <style>
-    .chessboard {
-      display: flex;
-      flex-wrap: wrap;
-      width: 400px; /* Adjust the width to fit the board */
-    }
-    .square {
-      width: 50px;
-      height: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      border: 1px solid #000;
-      box-sizing: border-box;
-    }
-    .white { background-color: #f0d9b5; }
-    .black { background-color: #b58863; }
-    .selected { border: 2px solid yellow; }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="timer.css">
 </head>
+
 <body>
   <div style="display: none;">♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜</div>
-  <div class="chessboard" id="board"></div>
+  <div id="game">
+    <div class="left-board text-light">
+      <div class="white-eaten"></div>
+      <div class="countdown">
+        <div class="timer">
+          <div class="time time-minutes">
+            <span>45</span>
+            <span>Minutes</span>
+          </div>
+          <div class="time time-seconds">
+            <span>25</span>
+            <span>Seconds</span>
+          </div>
+        </div>
+      </div>
+      <div class="black-eaten"></div>
+    </div>
+    <div class="chess-board" id="board"></div>
+    <div class="right-board text-light">
+      <div class="countdown">
+        <div class="timer">
+          <div class="time time-minutes">
+            <span>45</span>
+            <span>Minutes</span>
+          </div>
+          <div class="time time-seconds">
+            <span>25</span>
+            <span>Seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="index.js"></script>
 </body>
+
 </html>
