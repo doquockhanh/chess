@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { startRow, startCol, endRow, endCol } = data;
         myturn.setValue(true);
         lastMove.setValue([endRow, endCol])
+        isHightLight(true);
     })
 
     socket.on('start', () => {
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             myturn.setValue(true);
         }
         initializeBoard();
+        isHightLight(true);
     })
 
     function initializeBoard() {
@@ -131,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkWin(endRow, endCol);
             squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
             squares[startRow][startCol].innerText = '';
+            isHightLight(false);
             myturn.setValue(false);
             lastMove.setValue([endRow, endCol]);
             socket.emit('makeMove', { startRow, startCol, endRow, endCol });
@@ -286,6 +289,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         return false;
+    }
+
+    function isHightLight(hightLight) {
+        if (!myturn.getValue()) {
+            return;
+        }
+
+        for (let i = 0; i < squares.length; i++) {
+            for (let j = 0; j < squares[i].length; j++) {
+                const square = squares[i][j];
+                if (square.innerText && hightLight) {
+                    if (playerColor === 'white') {
+                        white.includes(square.innerText.toLowerCase())
+                            ? square.classList.add('hight-light')
+                            : square.classList.remove('hight-light');
+                    }
+                    if (playerColor === 'black') {
+                        black.includes(square.innerText.toLowerCase())
+                            ? square.classList.add('hight-light')
+                            : square.classList.remove('hight-light');
+                    }
+                } else {
+                    square.classList.remove('hight-light');
+                }
+            }
+        }
     }
 })
 
