@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedSquare = null;
     const black = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜', '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'];
     const white = ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'];
+    let deadChess = [];
+    let oponentDeadChess = [];
     let game = false;
     document.getElementById('playAgain').addEventListener('click', () => {
         socket.emit('playAgain');
@@ -49,6 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
         isHightLight(true);
     })
 
+    socket.on('deadChess', (chess) => {
+        oponentDeadChess.push(chess);
+        drawDeadChess();
+    })
+
     socket.on('start', () => {
         game = true;
         if (playerColor === 'white') {
@@ -66,6 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPlayAgain.classList.add('hidden')
         }
         lastMove.setValue([]);
+        deadChess = [];
+        oponentDeadChess = [];
+        drawDeadChess();
         if (playerColor === 'white') {
             myturn.setValue(1);
         } else {
@@ -160,16 +170,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function movePiece(startRow, startCol, endRow, endCol) {
         if (validateMove(startRow, startCol, endRow, endCol)) {
-            if(!checkWin(endRow, endCol)){
-                myturn.setValue(false);
-            }
             checkWin(endRow, endCol);
+            stackDeadChess(squares[endRow][endCol].innerText);
             squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
             squares[startRow][startCol].innerText = '';
             isHightLight(false);
+            if (game) { myturn.setValue(false); }
             lastMove.setValue([endRow, endCol]);
             socket.emit('makeMove', { startRow, startCol, endRow, endCol });
         }
+    }
+
+    function stackDeadChess(chess) {
+        if (!chess) {
+            return;
+        }
+        deadChess.push(chess);
+        socket.emit('deadChess', chess);
+        drawDeadChess();
     }
 
     function checkWin(endRow, endCol) {
@@ -381,6 +399,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function playMessageSound() {
         var mp3Source = `<source src="assets/message-sound.mp3" type="audio/mpeg">`;
         document.getElementById("sound").innerHTML = `<audio autoplay="autoplay"> ${mp3Source} </audio>`;
+    }
+
+    function drawDeadChess() {
+        if (playerColor === 'white') {
+            document.getElementsByClassName('black-eaten')[0].innerText = deadChess.join(" ");
+            document.getElementsByClassName('white-eaten')[0].innerText = oponentDeadChess.join(" ");
+        }
+
+        if (playerColor === 'black') {
+            document.getElementsByClassName('white-eaten')[0].innerText = deadChess.join(" ");
+            document.getElementsByClassName('black-eaten')[0].innerText = oponentDeadChess.join(" ");
+        }
     }
 })
 

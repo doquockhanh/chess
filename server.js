@@ -53,6 +53,10 @@ io.on('connection', (socket) => {
   socket.on('playAgain', () => {
     io.emit('restart');
   })
+
+  socket.on('deadChess', (chess) => {
+    socket.broadcast.emit('deadChess', chess);
+  })
 });
 
 const networkInterfaces = os.networkInterfaces();
