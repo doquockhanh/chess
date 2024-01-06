@@ -127,6 +127,7 @@ body {
 
 .right-board {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 25%;
@@ -142,4 +143,9 @@ body {
 
 .text-dark {
     color: var(--text-dark);
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
 }

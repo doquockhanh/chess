@@ -45,6 +45,14 @@ io.on('connection', (socket) => {
   socket.on('chatMessage', (message) => {
     io.emit('chatMessage', message); // Broadcast message to all connected clients
   });
+
+  socket.on('winner', (winner) => {
+    io.emit('winner', winner);
+  })
+
+  socket.on('playAgain', () => {
+    io.emit('restart');
+  })
 });
 
 const networkInterfaces = os.networkInterfaces();
