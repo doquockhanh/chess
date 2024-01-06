@@ -40,6 +40,11 @@ io.on('connection', (socket) => {
     console.log('A user disconnected');
     delete players[socket.id];
   });
+
+  // Handle chat messages
+  socket.on('chatMessage', (message) => {
+    io.emit('chatMessage', message); // Broadcast message to all connected clients
+  });
 });
 
 const networkInterfaces = os.networkInterfaces();

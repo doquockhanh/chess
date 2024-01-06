@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isHightLight(true);
     })
 
+    socket.on('chatMessage', (message) => {
+        displayMessage(message);
+    })
+
     function initializeBoard() {
         board.textContent = '';
         for (let i = 0; i < 8; i++) {
@@ -315,6 +319,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+    }
+
+    document.getElementById('messageInput').addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const message = document.getElementById('messageInput').value;
+        if (message.trim() !== '') {
+            document.getElementById('messageInput').value = '';
+            socket.emit('chatMessage', message);
+        }
+    }
+
+    // Hàm hiển thị tin nhắn trong chatbox
+    function displayMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const newMessage = document.createElement('p');
+        newMessage.textContent = message;
+        chatMessages.appendChild(newMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống tin nhắn mới nhất
+        playMessageSound();
+    }
+
+    function playMessageSound() {
+        var mp3Source = `<source src="assets/message-sound.mp3" type="audio/mpeg">`;
+        document.getElementById("sound").innerHTML = `<audio autoplay="autoplay"> ${mp3Source} </audio>`;
     }
 })
 

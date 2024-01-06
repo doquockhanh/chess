@@ -3,15 +3,17 @@
 
 <head>
   <title>Chess Game</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="timer.css">
+  <link rel="stylesheet" href="style/style.css">
+  <link rel="stylesheet" href="style/timer.css">
+  <link rel="stylesheet" href="style/chatbox.css">
 </head>
 
 <body>
   <div style="display: none;">♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜</div>
   <div id="game">
     <div class="left-board text-light">
-      <div class="white-eaten"></div>
+      <div class="chatbox">
+      </div>
       <div class="countdown">
         <div class="timer">
           <div class="time time-minutes">
@@ -24,13 +26,25 @@
           </div>
         </div>
       </div>
+      <div class="chatbox">
+        <div class="chat-messages" id="chatMessages">
+          <!-- Tin nhắn sẽ được hiển thị ở đây -->
+        </div>
+        <div class="actions">
+          <input type="text" id="messageInput" placeholder="Type here to messages">
+        </div>
+      </div>
+    </div>
+
+    <div class="chess-board" id="board"></div>
+
+    <div class="right-board text-light">
+      <div class="white-eaten"></div>
+      <div id="turn"></div>
       <div class="black-eaten"></div>
     </div>
-    <div class="chess-board" id="board"></div>
-    <div class="right-board text-light">
-      <div id="turn"></div>
-    </div>
   </div>
+  <div id="sound"></div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="index.js"></script>
 </body>
