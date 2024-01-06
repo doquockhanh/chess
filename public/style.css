@@ -12,7 +12,7 @@
 body {
     height: 100vh;
     margin: 0;
-    background: linear-gradient(45deg, var(--page-bg-from),  var(--page-bg-to))
+    background: linear-gradient(45deg, var(--page-bg-from), var(--page-bg-to))
 }
 
 #game {
@@ -43,7 +43,7 @@ body {
     border-radius: 5px;
     cursor: default;
     text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;   
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
 .square:hover {
@@ -65,11 +65,22 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
+.last-move {
+    outline: none;
+    background-color: rgb(234, 255, 0);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
 .left-board {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 25%;
+    height: var(--board-width);
     margin: 20px;
+    border: 1px solid var(--text-dark);
+    border-radius: 20px;
 }
 
 
@@ -77,7 +88,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 25%;
+    height: var(--board-width);
     margin: 20px;
+    border: 1px solid var(--text-dark);
+    border-radius: 20px;
 }
 
 .text-light {

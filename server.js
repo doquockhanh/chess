@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
 
   socket.on('makeMove', (data) => {
     socket.broadcast.emit('opponentMove', data);
-    socket.broadcast.emit('newTurn')
+    socket.broadcast.emit('newTurn', data)
   });
 
   if (Object.keys(players).length === 2) {

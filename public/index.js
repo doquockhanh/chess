@@ -7,28 +7,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const black = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜', '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'];
     const white = ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'];
     let game = true;
-    let myturn = false;
+
+    const myturn = createObservable(false, (newValue) => {
+        const turn = document.getElementById('turn');
+        if (newValue) {
+            turn.innerText = `Your turn (${playerColor ? playerColor.toUpperCase() : ''})`;
+        } else {
+            turn.innerText = "Wait for your oponent..."
+        }
+    }, true);
+
+    const lastMove = createObservable([], (newPosition, oldPosition) => {
+        const [row, col] = newPosition;
+        const [oldRow, oldCol] = oldPosition;
+        if (row && col) {
+            squares[row][col].classList.add('last-move');
+        }
+        if (oldRow && oldCol) {
+            squares[oldRow][oldCol]?.classList.remove('last-move');
+        }
+    })
 
     socket.on('color', (color) => {
         playerColor = color;
     });
 
     socket.on('opponentMove', (data) => {
-        const {startRow, startCol, endRow, endCol} = data;
+        const { startRow, startCol, endRow, endCol } = data;
         checkWin(endRow, endCol);
         squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
         squares[startRow][startCol].innerText = '';
     });
 
-    socket.on('newTurn', () => {
-        myturn = true;
+    socket.on('newTurn', (data) => {
+        const { startRow, startCol, endRow, endCol } = data;
+        myturn.setValue(true);
+        lastMove.setValue([endRow, endCol])
     })
 
     socket.on('start', () => {
-        if(playerColor === 'white') {
-            myturn = true;
+        if (playerColor === 'white') {
+            myturn.setValue(true);
         }
-        initializeBoard(); 
+        initializeBoard();
     })
 
     function initializeBoard() {
@@ -73,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (myturn === false) {
+        if (myturn.getValue() === false) {
             return;
         }
 
@@ -110,12 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
             checkWin(endRow, endCol);
             squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
             squares[startRow][startCol].innerText = '';
-            myturn = false;
-            socket.emit('makeMove', {startRow, startCol, endRow, endCol});
-           
+            myturn.setValue(false);
+            lastMove.setValue([endRow, endCol]);
+            socket.emit('makeMove', { startRow, startCol, endRow, endCol });
         }
     }
-   
+
     function checkWin(endRow, endCol) {
         const endPiece = squares[endRow][endCol].innerText;
         if (endPiece.toLowerCase() === '♔') {
@@ -268,3 +289,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 })
 
+// Helper
+// _________________________________________________________________________________
+
+function createObservable(initialValue, onChange, initCall = false) {
+    let value = initialValue;
+    if (initCall) {
+        onChange(initialValue, null);
+    }
+
+    function setValue(newValue) {
+        if (newValue !== value) {
+            onChange(newValue, value);
+            value = newValue;
+        }
+    }
+
+    function getValue() {
+        return value;
+    }
+
+    return {
+        setValue,
+        getValue
+    };
+}
