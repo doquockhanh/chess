@@ -40,8 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('opponentMove', (data) => {
         const { startRow, startCol, endRow, endCol } = data;
         checkWin(endRow, endCol);
-        squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
-        squares[startRow][startCol].innerText = '';
+        const chess = chessToHtml(squares[startRow][startCol].innerText);
+        squares[endRow][endCol].innerHTML = '';
+        squares[endRow][endCol].appendChild(chess);
+        squares[startRow][startCol].innerHTML = '';
     });
 
     socket.on('newTurn', (data) => {
@@ -53,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('deadChess', (chess) => {
         oponentDeadChess.push(chess);
-        drawDeadChess();
+        showDeadChess();
     })
 
     socket.on('start', () => {
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastMove.setValue([]);
         deadChess = [];
         oponentDeadChess = [];
-        drawDeadChess();
+        showDeadChess();
         if (playerColor === 'white') {
             myturn.setValue(1);
         } else {
@@ -102,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let j = 0; j < 8; j++) {
                 const square = document.createElement('div');
                 square.className = ((i + j) % 2 === 0) ? 'square white' : 'square black';
+                square.classList.add('droppable');
                 square.dataset.row = i;
                 square.dataset.col = j;
                 square.addEventListener('click', squareClick);
@@ -126,7 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                squares[i][j].innerText = startingPositions[i][j];
+                const chess = chessToHtml(startingPositions[i][j]);
+                squares[i][j].innerHTML = '';
+                squares[i][j].appendChild(chess);
             }
         }
     }
@@ -140,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const clickedSquare = event.target;
+        const clickedSquare = event.currentTarget;
         const row = parseInt(clickedSquare.dataset.row);
         const col = parseInt(clickedSquare.dataset.col);
         const piece = squares[row][col].innerText;
@@ -172,8 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (validateMove(startRow, startCol, endRow, endCol)) {
             checkWin(endRow, endCol);
             stackDeadChess(squares[endRow][endCol].innerText);
-            squares[endRow][endCol].innerText = squares[startRow][startCol].innerText;
-            squares[startRow][startCol].innerText = '';
+            const chess = chessToHtml(squares[startRow][startCol].innerText);
+            squares[endRow][endCol].innerHTML = '';
+            squares[endRow][endCol].appendChild(chess);
+            squares[startRow][startCol].innerHTML = '';
             isHightLight(false);
             if (game) { myturn.setValue(false); }
             lastMove.setValue([endRow, endCol]);
@@ -187,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         deadChess.push(chess);
         socket.emit('deadChess', chess);
-        drawDeadChess();
+        showDeadChess();
     }
 
     function checkWin(endRow, endCol) {
@@ -401,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("sound").innerHTML = `<audio autoplay="autoplay"> ${mp3Source} </audio>`;
     }
 
-    function drawDeadChess() {
+    function showDeadChess() {
         if (playerColor === 'white') {
             document.getElementsByClassName('black-eaten')[0].innerText = deadChess.join(" ");
             document.getElementsByClassName('white-eaten')[0].innerText = oponentDeadChess.join(" ");
@@ -412,6 +419,64 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementsByClassName('black-eaten')[0].innerText = oponentDeadChess.join(" ");
         }
     }
+
+    function chessToHtml(chess) {
+        const chessElm = document.createElement('span');
+        chessElm.className = 'unselectable draggable';
+        const value = document.createTextNode(chess);
+        chessElm.appendChild(value);
+        return chessElm;
+    }
+
+    /**Drag drop */
+    let draggedItem = null;
+
+    const draggables = document.getElementsByClassName('draggable');
+    const droppables = document.getElementsByClassName('droppable');
+
+    draggables.forEach((draggable) => {
+        draggable.addEventListener('mousedown', (e) => {
+            draggedItem = e.target;
+            const offsetX = e.clientX - draggedItem.getBoundingClientRect().left;
+            const offsetY = e.clientY - draggedItem.getBoundingClientRect().top;
+
+            function onMouseMove(event) {
+                draggedItem.style.position = 'absolute';
+                draggedItem.style.left = `${event.clientX - offsetX}px`;
+                draggedItem.style.top = `${event.clientY - offsetY}px`;
+                draggedItem.style.zIndex = '1000';
+            }
+
+            function onMouseUp(event) {
+                droppables.forEach((droppable) => {
+                    const rect = droppable.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    if (
+                        event.clientX >= rect.left &&
+                        event.clientX <= rect.right &&
+                        event.clientY >= rect.top &&
+                        event.clientY <= rect.bottom
+                    ) {
+                        draggedItem.style.position = 'absolute';
+                        draggedItem.style.left = '0';
+                        draggedItem.style.top = '0';
+                        draggedItem.style.zIndex = 'auto';
+                        droppable.appendChild(draggedItem.cloneNode(true));
+                    }
+                });
+
+                draggedItem.style.display = 'none';
+
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    });
 })
 
 // Helper

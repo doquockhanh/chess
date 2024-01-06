@@ -197,3 +197,18 @@ body {
         display: none;
     }
 }
+
+.unselectable {
+    -webkit-touch-callout: none;
+    /* Ngăn người dùng iOS giữ và chọn văn bản */
+    -webkit-user-select: none;
+    /* Ngăn lựa chọn trên các trình duyệt WebKit (Safari, Chrome) */
+    -khtml-user-select: none;
+    /* Ngăn lựa chọn trên các trình duyệt KHTML (Konqueror) */
+    -moz-user-select: none;
+    /* Ngăn lựa chọn trên Firefox */
+    -ms-user-select: none;
+    /* Ngăn lựa chọn trên Internet Explorer/Edge */
+    user-select: none;
+    /* Chuẩn CSS cho ngăn lựa chọn */
+}
