@@ -40,9 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('opponentMove', (data) => {
         const { startRow, startCol, endRow, endCol } = data;
         checkWin(endRow, endCol);
-        const chess = chessToHtml(squares[startRow][startCol].innerText);
-        squares[endRow][endCol].innerHTML = '';
-        squares[endRow][endCol].appendChild(chess);
+        chessIntoSquare(squares[endRow][endCol], squares[startRow][startCol].innerText);
         squares[startRow][startCol].innerHTML = '';
     });
 
@@ -129,11 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                const chess = chessToHtml(startingPositions[i][j]);
-                squares[i][j].innerHTML = '';
-                squares[i][j].appendChild(chess);
+                chessIntoSquare(squares[i][j], startingPositions[i][j]);
             }
         }
+
+        setupDragDrop();
     }
 
     function squareClick(event) {
@@ -177,9 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (validateMove(startRow, startCol, endRow, endCol)) {
             checkWin(endRow, endCol);
             stackDeadChess(squares[endRow][endCol].innerText);
-            const chess = chessToHtml(squares[startRow][startCol].innerText);
-            squares[endRow][endCol].innerHTML = '';
-            squares[endRow][endCol].appendChild(chess);
+            chessIntoSquare(squares[endRow][endCol], squares[startRow][startCol].innerText);
             squares[startRow][startCol].innerHTML = '';
             isHightLight(false);
             if (game) { myturn.setValue(false); }
@@ -420,63 +416,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function chessToHtml(chess) {
+    function chessIntoSquare(square, chess) {
+        if (!black.includes(chess) && !white.includes(chess)) {
+            square.innerHTML = '';
+        }
         const chessElm = document.createElement('span');
         chessElm.className = 'unselectable draggable';
+        chessElm.setAttribute('draggable', 'true');
         const value = document.createTextNode(chess);
         chessElm.appendChild(value);
-        return chessElm;
+        square.appendChild(chessElm);
     }
 
     /**Drag drop */
-    let draggedItem = null;
+    function setupDragDrop() {
+        let draggedItem = null;
 
-    const draggables = document.getElementsByClassName('draggable');
-    const droppables = document.getElementsByClassName('droppable');
+        const draggables = document.querySelectorAll('.draggable');
+        const droppables = document.querySelectorAll('.droppable');
 
-    draggables.forEach((draggable) => {
-        draggable.addEventListener('mousedown', (e) => {
-            draggedItem = e.target;
-            const offsetX = e.clientX - draggedItem.getBoundingClientRect().left;
-            const offsetY = e.clientY - draggedItem.getBoundingClientRect().top;
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', function (event) {
+                draggedItem = this;
+                this.classList.add('dragging');
+            });
 
-            function onMouseMove(event) {
-                draggedItem.style.position = 'absolute';
-                draggedItem.style.left = `${event.clientX - offsetX}px`;
-                draggedItem.style.top = `${event.clientY - offsetY}px`;
-                draggedItem.style.zIndex = '1000';
-            }
-
-            function onMouseUp(event) {
-                droppables.forEach((droppable) => {
-                    const rect = droppable.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-
-                    if (
-                        event.clientX >= rect.left &&
-                        event.clientX <= rect.right &&
-                        event.clientY >= rect.top &&
-                        event.clientY <= rect.bottom
-                    ) {
-                        draggedItem.style.position = 'absolute';
-                        draggedItem.style.left = '0';
-                        draggedItem.style.top = '0';
-                        draggedItem.style.zIndex = 'auto';
-                        droppable.appendChild(draggedItem.cloneNode(true));
-                    }
-                });
-
-                draggedItem.style.display = 'none';
-
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+            draggable.addEventListener('dragend', function () {
+                draggedItem = null;
+                this.classList.remove('dragging');
+            });
         });
-    });
+
+        droppables.forEach(droppable => {
+            droppable.addEventListener('dragover', function (event) {
+                event.preventDefault();
+            });
+
+            droppable.addEventListener('dragenter', function (event) {
+                event.preventDefault();
+                this.classList.add('hovered');
+            });
+
+            droppable.addEventListener('dragleave', function () {
+                this.classList.remove('hovered');
+            });
+
+            droppable.addEventListener('drop', function () {
+                if (draggedItem) {
+                    this.appendChild(draggedItem);
+                    this.classList.remove('hovered');
+                }
+            });
+        });
+    }
 })
 
 // Helper
