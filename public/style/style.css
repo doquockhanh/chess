@@ -33,7 +33,7 @@ body {
 
 .square {
     width: calc(var(--board-width) / 8 - var(--square-margin)*2);
-    height: calc(var(--board-width) / 8);
+    height: calc(var(--board-width) / 8 - var(--square-margin)*2);
     margin: var(--square-margin);
     display: flex;
     justify-content: center;
@@ -45,10 +45,15 @@ body {
     cursor: default;
     text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
     box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+    transform: scale(1.05);
+}
+
+.square::before {
+    content: '';
 }
 
 .square:hover {
-    transform: scale(1.05);
+    transform: scale(1);
 }
 
 .white {
@@ -85,6 +90,7 @@ body {
     border-image: linear-gradient(45deg, #ffa500, #48c6ef, #6f86d6) 1;
     border-radius: 10px;
     animation: moveAround 5s ease-in-out infinite;
+    z-index: -1;
 }
 
 @keyframes moveAround {
@@ -211,4 +217,15 @@ body {
     /* Ngăn lựa chọn trên Internet Explorer/Edge */
     user-select: none;
     /* Chuẩn CSS cho ngăn lựa chọn */
+}
+
+.fill {
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+}
+
+span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

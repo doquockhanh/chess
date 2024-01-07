@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let deadChess = [];
     let oponentDeadChess = [];
     let game = false;
+    let draggedItem = null;
     document.getElementById('playAgain').addEventListener('click', () => {
         socket.emit('playAgain');
     })
@@ -417,34 +418,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function chessIntoSquare(square, chess) {
+        square.innerHTML = '';
         if (!black.includes(chess) && !white.includes(chess)) {
-            square.innerHTML = '';
+            return;
         }
         const chessElm = document.createElement('span');
-        chessElm.className = 'unselectable draggable';
+        chessElm.className = 'unselectable draggable fill';
         chessElm.setAttribute('draggable', 'true');
         const value = document.createTextNode(chess);
         chessElm.appendChild(value);
+        addDragToChess(chessElm);
         square.appendChild(chessElm);
     }
 
     /**Drag drop */
     function setupDragDrop() {
-        let draggedItem = null;
-
         const draggables = document.querySelectorAll('.draggable');
         const droppables = document.querySelectorAll('.droppable');
 
         draggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', function (event) {
-                draggedItem = this;
-                this.classList.add('dragging');
-            });
-
-            draggable.addEventListener('dragend', function () {
-                draggedItem = null;
-                this.classList.remove('dragging');
-            });
+            addDragToChess(draggable)
         });
 
         droppables.forEach(droppable => {
@@ -454,20 +447,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
             droppable.addEventListener('dragenter', function (event) {
                 event.preventDefault();
-                this.classList.add('hovered');
+                // this.classList.add('hovered');
             });
 
             droppable.addEventListener('dragleave', function () {
-                this.classList.remove('hovered');
+                // this.classList.remove('hovered');
             });
 
             droppable.addEventListener('drop', function () {
-                if (draggedItem) {
-                    this.appendChild(draggedItem);
-                    this.classList.remove('hovered');
+                if (draggedItem && selectedSquare) {
+                    // this.classList.remove('hovered');
+                    const selectedRow = parseInt(selectedSquare.dataset.row);
+                    const selectedCol = parseInt(selectedSquare.dataset.col);
+                    const row = parseInt(droppable.dataset.row);
+                    const col = parseInt(droppable.dataset.col);
+
+                    movePiece(selectedRow, selectedCol, row, col);
                 }
             });
         });
+    }
+
+    function addDragToChess(chess) {
+        chess.addEventListener('dragstart', function (event) {
+            draggedItem = this;
+            selectedSquare = event.target.parentNode;
+            // this.classList.add('dragging');
+        });
+
+        chess.addEventListener('dragend', function () {
+            draggedItem = null;
+            selectedSquare = null;
+            // this.classList.remove('dragging');
+        });
+
     }
 })
 
