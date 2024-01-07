@@ -229,3 +229,47 @@ span {
     justify-content: center;
     align-items: center;
 }
+
+/** Home*/
+#home {
+    display: flex;
+
+}
+.left-section,
+.right-section {
+    display: flex;
+    width: 50%;
+    height: 100vh;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.btn-lg {
+    font-size: 32px;
+    padding: 20px;
+    color: var(--text-light);
+    border-radius: 20px;
+    font-family: 'Courier New', monospace;
+}
+
+.room-board {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    height: 80%;
+    border: 1px solid var(--text-dark);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.room {
+    display: flex;
+    border: 1px solid var(--text-dark);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    color: var(--text-light);
+    justify-content: space-between;
+}

@@ -1,5 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
+    /**Home */
+    socket.on('rooms', (rooms) => {
+        const roomsElm = document.getElementById('rooms');
+        rooms.forEach(room => {
+            console.log(room);
+        })
+    })
+
+    /**Game */
     const board = document.getElementById('board');
     const squares = [];
     let playerColor = null; // 'white' or 'black'
@@ -470,6 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addDragToChess(chess) {
         chess.addEventListener('dragstart', function (event) {
+            if (game === false) {
+                return;
+            }
             draggedItem = this;
             selectedSquare = event.target.parentNode;
             // this.classList.add('dragging');

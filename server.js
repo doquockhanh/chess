@@ -13,9 +13,39 @@ app.use(express.static(__dirname + '/public'));
 
 let players = {};
 let colors = ['white', 'black'];
+let rooms = {};
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  socket.on('createRoom', () => {
+    let randomId;
+    do {
+      randomId = Math.floor(Math.random() * 10000) + 1;
+    } while (rooms[roomName]);
+
+    socket.join(roomName.toString());
+    rooms[roomName] = { sockets: [socket.id] };
+  });
+
+  socket.emit('rooms', Object.keys(rooms));
+
+  socket.on('getRoom', () => {
+    socket.emit('rooms', rooms);
+  })
+
+  socket.on('disconnecting', () => {
+    const roomsToLeave = Object.keys(socket.rooms).filter(item => item !== socket.id);
+    roomsToLeave.forEach(room => {
+      if (rooms[room]) {
+        const index = rooms[room].sockets.indexOf(socket.id);
+        if (index !== -1) {
+          rooms[room].sockets.splice(index, 1);
+          if (rooms[room].sockets.length === 0) {
+            delete rooms[room];
+          }
+        }
+      }
+    });
+  });
 
   // Assign each new player a number and store their socket
   players[socket.id] = { id: socket.id, playerNumber: Object.keys(players).length + 1 };
