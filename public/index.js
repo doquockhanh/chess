@@ -3,10 +3,45 @@ document.addEventListener('DOMContentLoaded', () => {
     /**Home */
     socket.on('rooms', (rooms) => {
         const roomsElm = document.getElementById('rooms');
-        rooms.forEach(room => {
-            console.log(room);
-        })
+        roomsElm.innerHTML = '';
+        for (const key in rooms) {
+            if (Object.hasOwnProperty.call(rooms, key)) {
+                const players = rooms[key]?.sockets;
+                let roomElement = createRoomDiv(key, 'hieuthu2', players.length, 2);
+                roomsElm.appendChild(roomElement);
+            }
+        }
     })
+
+    function createRoomDiv(roomId, playerName, playerCount, maxPlayers) {
+        let roomDiv = document.createElement('div');
+        roomDiv.classList.add('room');
+        let roomDetailsSpan = document.createElement('span');
+        roomDetailsSpan.textContent = `#ID ${roomId} player ${playerCount}/${maxPlayers}`;
+        let playerNameSpan = document.createElement('span');
+        playerNameSpan.textContent = playerName;
+        roomDiv.appendChild(roomDetailsSpan);
+        roomDiv.appendChild(playerNameSpan);
+        return roomDiv;
+    }
+
+    const btnCreateRoom = document.getElementById('btn-create-room').addEventListener('click', () => {
+        socket.emit('createRoom');
+    })
+
+    socket.on('enterRoom', (data) => {
+        const [roomId, players] = data;
+        enterRoom(roomId, players);
+    })
+
+    /**Room */
+    function enterRoom(id, players) {
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('game').style.display = 'none';
+        const room = document.getElementById('room');
+        room.style.display = 'block';
+    }
+
 
     /**Game */
     const board = document.getElementById('board');

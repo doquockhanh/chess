@@ -13,20 +13,35 @@ app.use(express.static(__dirname + '/public'));
 
 let players = {};
 let colors = ['white', 'black'];
-let rooms = {};
+let rooms = {
+  12345: { sockets: ['socket1', 'socket2'] },
+  69696: { sockets: ['socket3'] },
+  98765: { sockets: ['socket4', 'socket5'] }
+};
 
 io.on('connection', (socket) => {
   socket.on('createRoom', () => {
     let randomId;
     do {
       randomId = Math.floor(Math.random() * 10000) + 1;
-    } while (rooms[roomName]);
+    } while (rooms[randomId]);
 
-    socket.join(roomName.toString());
-    rooms[roomName] = { sockets: [socket.id] };
+    socket.join(randomId.toString());
+    rooms[randomId] = { sockets: [socket.id] };
+    socket.emit('enterRoom', [randomId, rooms[randomId]])
   });
 
-  socket.emit('rooms', Object.keys(rooms));
+  socket.on('joinRoom', (id) => {
+    socket.join(id.toString());
+    if(rooms[randomId].sockets.length < 2) {
+      rooms[randomId] = { sockets: [...rooms[randomId].sockets, socket.id] };
+      socket.emit('enterRoom', [randomId, rooms[randomId]])
+    }else {
+      socket.emit('roomFull', 'This room is full!');
+    }
+  })
+
+  socket.emit('rooms', rooms);
 
   socket.on('getRoom', () => {
     socket.emit('rooms', rooms);
