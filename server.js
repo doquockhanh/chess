@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnecting', () => {
     console.log('A user disconnecting');
-    removeEmptyRooms();
+    removeEmptyRooms(socket);
   });
 
   socket.on('disconnect', () => {
@@ -63,28 +63,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('outRoom', () => {
-    removeEmptyRooms();
+    removeEmptyRooms(socket);
   })
 
-  function removeEmptyRooms() {
-    const roomsToLeave = Array.from(socket.rooms);
-    roomsToLeave.forEach(room => {
-      if (rooms[room]) {
-        const index = rooms[room].sockets.indexOf(socket.id);
-        if (index !== -1) {
-          rooms[room].sockets.splice(index, 1);
-          if (rooms[room].sockets.length === 0) {
-            delete rooms[room];
-          }
-        }
-      }
-    });
-  }
-
   socket.on('makeMove', (data) => {
-    const roomID = getRoomIdBySocket();
-    io.to(roomID).emit('opponentMove', data);
-    io.to(roomID).emit('newTurn', data)
+    const roomID = getRoomIdBySocket(socket);
+    console.log(roomID);
+    socket.broadcast.to(roomID).emit('opponentMove', data);
+    socket.broadcast.to(roomID).emit('newTurn', data)
   });
 
   socket.on('start', (roomid) => {
@@ -96,17 +82,17 @@ io.on('connection', (socket) => {
 
   // Handle chat messages
   socket.on('chatMessage', (message) => {
-    const roomID = getRoomIdBySocket();
+    const roomID = getRoomIdBySocket(socket);
     io.to(roomID).emit('chatMessage', message); // Broadcast message to all connected clients
   });
 
   socket.on('winner', (winner) => {
-    const roomID = getRoomIdBySocket();
+    const roomID = getRoomIdBySocket(socket);
     io.to(roomID).emit('winner', winner);
   })
 
   socket.on('playAgain', () => {
-    const roomId = getRoomIdBySocket();
+    const roomId = getRoomIdBySocket(socket);
     if (rooms[roomId].sockets.length === 2) {
       socket.emit('color');
       io.to(roomId).emit('restart');
@@ -114,19 +100,37 @@ io.on('connection', (socket) => {
   })
 
   socket.on('deadChess', (chess) => {
-    const roomID = getRoomIdBySocket();
-    io.to(roomID).emit('deadChess', chess);
+    const roomID = getRoomIdBySocket(socket);
+    socket.broadcast.to(roomID).emit('deadChess', chess);
   })
-
-  function getRoomIdBySocket() {
-    const roomsJoined = Array.from(socket.rooms);
-    roomsJoined.forEach(roomid => {
-      if (rooms[roomid]) {
-        return roomid
-      }
-    });
-  }
 });
+
+function getRoomIdBySocket(socket) {
+  const roomsJoined = Array.from(socket.rooms);
+  let id;
+  roomsJoined.forEach(roomid => {
+    if (rooms[roomid]) {
+      id = roomid.toString();
+      return;
+    }
+  });
+  return id;
+}
+
+function removeEmptyRooms(socket) {
+  const roomsToLeave = Array.from(socket.rooms);
+  roomsToLeave.forEach(room => {
+    if (rooms[room]) {
+      const index = rooms[room].sockets.indexOf(socket.id);
+      if (index !== -1) {
+        rooms[room].sockets.splice(index, 1);
+        if (rooms[room].sockets.length === 0) {
+          delete rooms[room];
+        }
+      }
+    }
+  });
+}
 
 const networkInterfaces = os.networkInterfaces();
 
