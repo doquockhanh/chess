@@ -82,12 +82,13 @@ io.on('connection', (socket) => {
   }
 
   socket.on('makeMove', (data) => {
-    socket.broadcast.emit('opponentMove', data);
-    socket.broadcast.emit('newTurn', data)
+    const roomID = getRoomIdBySocket();
+    io.to(roomID).emit('opponentMove', data);
+    io.to(roomID).emit('newTurn', data)
   });
 
   socket.on('start', (roomid) => {
-    if(rooms[roomid].sockets.length === 2) {
+    if (rooms[roomid].sockets.length === 2) {
       socket.emit('color');
       io.to(roomid).emit('start');
     }
@@ -95,23 +96,36 @@ io.on('connection', (socket) => {
 
   // Handle chat messages
   socket.on('chatMessage', (message) => {
-    io.emit('chatMessage', message); // Broadcast message to all connected clients
+    const roomID = getRoomIdBySocket();
+    io.to(roomID).emit('chatMessage', message); // Broadcast message to all connected clients
   });
 
   socket.on('winner', (winner) => {
-    io.emit('winner', winner);
+    const roomID = getRoomIdBySocket();
+    io.to(roomID).emit('winner', winner);
   })
 
   socket.on('playAgain', () => {
-    if(rooms[roomid].sockets.length === 2) {
+    const roomId = getRoomIdBySocket();
+    if (rooms[roomId].sockets.length === 2) {
       socket.emit('color');
-      io.to(roomid).emit('restart');
+      io.to(roomId).emit('restart');
     }
   })
 
   socket.on('deadChess', (chess) => {
-    socket.broadcast.emit('deadChess', chess);
+    const roomID = getRoomIdBySocket();
+    io.to(roomID).emit('deadChess', chess);
   })
+
+  function getRoomIdBySocket() {
+    const roomsJoined = Array.from(socket.rooms);
+    roomsJoined.forEach(roomid => {
+      if (rooms[roomid]) {
+        return roomid
+      }
+    });
+  }
 });
 
 const networkInterfaces = os.networkInterfaces();
