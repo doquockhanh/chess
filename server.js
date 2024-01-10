@@ -12,43 +12,62 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname + '/public'));
 
 let players = {};
-let colors = ['white', 'black'];
-let rooms = {
-  12345: { sockets: ['socket1', 'socket2'] },
-  69696: { sockets: ['socket3'] },
-  98765: { sockets: ['socket4', 'socket5'] }
-};
+let rooms = {};
 
 io.on('connection', (socket) => {
-  socket.on('createRoom', () => {
-    let randomId;
-    do {
-      randomId = Math.floor(Math.random() * 10000) + 1;
-    } while (rooms[randomId]);
-
-    socket.join(randomId.toString());
-    rooms[randomId] = { sockets: [socket.id] };
-    socket.emit('enterRoom', [randomId, rooms[randomId]])
-  });
-
-  socket.on('joinRoom', (id) => {
-    socket.join(id.toString());
-    if(rooms[randomId].sockets.length < 2) {
-      rooms[randomId] = { sockets: [...rooms[randomId].sockets, socket.id] };
-      socket.emit('enterRoom', [randomId, rooms[randomId]])
-    }else {
-      socket.emit('roomFull', 'This room is full!');
-    }
-  })
-
-  socket.emit('rooms', rooms);
+  // Assign each new player a number and store their socket
+  players[socket.id] = { id: socket.id, playerNumber: Object.keys(players).length + 1 };
 
   socket.on('getRoom', () => {
     socket.emit('rooms', rooms);
   })
 
+  socket.on('createRoom', () => {
+    let randomId;
+    do {
+      randomId = (Math.floor(Math.random() * 10000) + 1).toString();
+    } while (rooms[randomId]);
+
+    socket.join(randomId);
+    rooms[randomId] = { sockets: [socket.id] };
+    sendRoomDetail(randomId);
+  });
+
+  socket.on('joinRoom', (id) => {
+    socket.join(id);
+    if (rooms[id].sockets.length < 2) {
+      rooms[id] = { sockets: [...rooms[id].sockets, socket.id] };
+      sendRoomDetail(id);
+    } else {
+      socket.emit('roomFull', 'This room is full!');
+    }
+  })
+
+  function sendRoomDetail(roomid) {
+    const room = rooms[roomid];
+    const playersDetail = [];
+    room.sockets.forEach(socketID => {
+      playersDetail.push(players[socketID])
+    })
+    io.to(roomid).emit('enterRoom', [roomid, playersDetail]);
+  }
+
   socket.on('disconnecting', () => {
-    const roomsToLeave = Object.keys(socket.rooms).filter(item => item !== socket.id);
+    console.log('A user disconnecting');
+    removeEmptyRooms();
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+    delete players[socket.id];
+  });
+
+  socket.on('outRoom', () => {
+    removeEmptyRooms();
+  })
+
+  function removeEmptyRooms() {
+    const roomsToLeave = Array.from(socket.rooms);
     roomsToLeave.forEach(room => {
       if (rooms[room]) {
         const index = rooms[room].sockets.indexOf(socket.id);
@@ -60,31 +79,19 @@ io.on('connection', (socket) => {
         }
       }
     });
-  });
-
-  // Assign each new player a number and store their socket
-  players[socket.id] = { id: socket.id, playerNumber: Object.keys(players).length + 1 };
-
-  // Send the player their color
-  const color = colors.pop();
-  if (color === 'white') {
-    colors = ['white', 'black'];
   }
-  socket.emit('color', color);
 
   socket.on('makeMove', (data) => {
     socket.broadcast.emit('opponentMove', data);
     socket.broadcast.emit('newTurn', data)
   });
 
-  if (Object.keys(players).length === 2) {
-    io.emit('start');
-  }
-
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
-    delete players[socket.id];
-  });
+  socket.on('start', (roomid) => {
+    if(rooms[roomid].sockets.length === 2) {
+      socket.emit('color');
+      io.to(roomid).emit('start');
+    }
+  })
 
   // Handle chat messages
   socket.on('chatMessage', (message) => {
@@ -96,7 +103,10 @@ io.on('connection', (socket) => {
   })
 
   socket.on('playAgain', () => {
-    io.emit('restart');
+    if(rooms[roomid].sockets.length === 2) {
+      socket.emit('color');
+      io.to(roomid).emit('restart');
+    }
   })
 
   socket.on('deadChess', (chess) => {

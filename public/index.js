@@ -1,13 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     /**Home */
+    socket.emit('getRoom');
+
     socket.on('rooms', (rooms) => {
         const roomsElm = document.getElementById('rooms');
         roomsElm.innerHTML = '';
+        const title = document.createElement('div');
+        title.className = 'room';
+        const boldText = document.createElement('b');
+        boldText.textContent = 'Join a room!!!';
+        title.appendChild(boldText);
+        roomsElm.appendChild(title);
         for (const key in rooms) {
             if (Object.hasOwnProperty.call(rooms, key)) {
                 const players = rooms[key]?.sockets;
                 let roomElement = createRoomDiv(key, 'hieuthu2', players.length, 2);
+                roomElement.addEventListener('click', () => {
+                    socket.emit('joinRoom', key)
+                })
                 roomsElm.appendChild(roomElement);
             }
         }
@@ -25,13 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return roomDiv;
     }
 
-    const btnCreateRoom = document.getElementById('btn-create-room').addEventListener('click', () => {
+    document.getElementById('btn-create-room').addEventListener('click', () => {
         socket.emit('createRoom');
     })
 
     socket.on('enterRoom', (data) => {
         const [roomId, players] = data;
         enterRoom(roomId, players);
+        startBtn(roomId);
     })
 
     /**Room */
@@ -40,13 +52,36 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('game').style.display = 'none';
         const room = document.getElementById('room');
         room.style.display = 'block';
+        room.innerHTML = '';
+        const divRoomId = document.createElement('div');
+        divRoomId.textContent = `RoomID: #${id}`;
+        const divPlayerCount = document.createElement('div');
+        divPlayerCount.textContent = `Player ${players.length}/2`;
+        room.appendChild(divRoomId);
+        room.appendChild(divPlayerCount);
+        players.forEach(player => {
+            const div = document.createElement('div');
+            div.textContent = 'Hieuthu2';
+            room.appendChild(div);
+        })
+    }
+
+    function startBtn(roomId) {
+        const room = document.getElementById('room');
+        const button = document.createElement('button');
+        button.className = 'btn-lg'; // Adding the class 'btn-lg' to the button
+        button.textContent = 'Start';
+        button.addEventListener('click', () => {
+            socket.emit('start', roomId);
+        })
+        room.appendChild(button);
     }
 
 
     /**Game */
     const board = document.getElementById('board');
     const squares = [];
-    let playerColor = null; // 'white' or 'black'
+    let playerColor = 'black'; // 'white' or 'black'
     let selectedSquare = null;
     const black = ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜', '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'];
     const white = ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖'];
@@ -78,30 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    socket.on('color', (color) => {
-        playerColor = color;
-    });
-
-    socket.on('opponentMove', (data) => {
-        const { startRow, startCol, endRow, endCol } = data;
-        checkWin(endRow, endCol);
-        chessIntoSquare(squares[endRow][endCol], squares[startRow][startCol].innerText);
-        squares[startRow][startCol].innerHTML = '';
-    });
-
-    socket.on('newTurn', (data) => {
-        const { startRow, startCol, endRow, endCol } = data;
-        myturn.setValue(true);
-        lastMove.setValue([endRow, endCol])
-        isHightLight(true);
-    })
-
-    socket.on('deadChess', (chess) => {
-        oponentDeadChess.push(chess);
-        showDeadChess();
-    })
-
     socket.on('start', () => {
+        showGame();
         game = true;
         if (playerColor === 'white') {
             myturn.setValue(true);
@@ -128,6 +141,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         initializeBoard();
         isHightLight(true);
+    })
+
+    function showGame() {
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('room').style.display = 'none';
+        const gameDiv = document.getElementById('game');
+        gameDiv.style.display = 'flex';
+    }
+
+    socket.on('color', () => {
+        playerColor = 'white';
+    });
+
+    socket.on('opponentMove', (data) => {
+        const { startRow, startCol, endRow, endCol } = data;
+        checkWin(endRow, endCol);
+        chessIntoSquare(squares[endRow][endCol], squares[startRow][startCol].innerText);
+        squares[startRow][startCol].innerHTML = '';
+    });
+
+    socket.on('newTurn', (data) => {
+        const { startRow, startCol, endRow, endCol } = data;
+        myturn.setValue(true);
+        lastMove.setValue([endRow, endCol])
+        isHightLight(true);
+    })
+
+    socket.on('deadChess', (chess) => {
+        oponentDeadChess.push(chess);
+        showDeadChess();
     })
 
     socket.on('chatMessage', (message) => {
@@ -514,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addDragToChess(chess) {
         chess.addEventListener('dragstart', function (event) {
-            if (game === false) {
+            if (game === false || !myturn.getValue()) {
                 return;
             }
             draggedItem = this;

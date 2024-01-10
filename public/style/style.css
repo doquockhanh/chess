@@ -264,7 +264,8 @@ span {
     padding: 20px;
 }
 
-.room {
+.room,
+#room {
     display: flex;
     border: 1px solid var(--text-dark);
     border-radius: 20px;
