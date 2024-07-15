@@ -68,7 +68,6 @@ io.on('connection', (socket) => {
 
   socket.on('makeMove', (data) => {
     const roomID = getRoomIdBySocket(socket);
-    console.log(roomID);
     socket.broadcast.to(roomID).emit('opponentMove', data);
     socket.broadcast.to(roomID).emit('newTurn', data)
   });
